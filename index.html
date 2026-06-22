@@ -123,7 +123,9 @@ let allItems=[],activeItems=[],doneSet=new Set(),skipSet=new Set(),measurements=
 
 function loadData(items){
   allItems=items;doneSet.clear();skipSet.clear();measurements={};
-  document.getElementById("upload-view").style.display="none";
+  const uploadView=document.getElementById("upload-view");
+  if(uploadView)uploadView.style.display="none";
+  document.getElementById("loading-view").style.display="none";
   document.getElementById("main-view").style.display="block";
   reloadItems();
 }
