@@ -277,14 +277,19 @@ async function fetchData(){
   errDiv.style.display="none";
   retryBtn.style.display="none";
   try{
+    console.log("Fetching:", CSV_URL);
     const resp=await fetch(CSV_URL,{cache:"no-store"});
-    if(!resp.ok)throw new Error("HTTP "+resp.status+" — tarkista bucketti tai CORS-asetukset");
+    console.log("Response status:", resp.status);
+    if(!resp.ok)throw new Error("HTTP "+resp.status);
     const text=await resp.text();
+    console.log("CSV length:", text.length, "first chars:", text.slice(0,80));
     const items=parseCsv(text);
-    if(!items.length)throw new Error("CSV ei tuottanut tuloksia — tarkista sarakkeiden nimet");
+    console.log("Parsed items:", items.length);
+    if(!items.length)throw new Error("CSV parsinta epäonnistui");
     loadingView.style.display="none";
     loadData(items);
   }catch(err){
+    console.error("fetchData error:", err);
     errDiv.textContent="Virhe: "+err.message;
     errDiv.style.display="block";
     retryBtn.style.display="inline-block";
