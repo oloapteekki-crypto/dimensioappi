@@ -207,29 +207,11 @@ function resetSession(){
 }
 
 function exportCsv(){
-  // Build CSV with original fields, overwrite olo_* for measured items
-  const fields=["sku","name","hyllypaikka","hinnastotila","visibility","height","length","width","olo_height","olo_length","olo_width","varasto","tilaus"];
-  const header=["sku","name","hyllypaikka","hinnastotila","visibility","height","length","width","olo_height","olo_length","olo_width","varasto kpl","Tilausmäärä 12 vko"];
-  
-  // Map: sku -> item for all allItems
-  const itemMap={};
-  allItems.forEach(it=>itemMap[it.sku]=it);
-
-  const rows=[header.join(",")];
-  allItems.forEach(it=>{
-    const m=measurements[it.sku];
-    const olo_h=m?m.h:(it.olo_height==="null"?"":it.olo_height);
-    const olo_l=m?m.l:(it.olo_length==="null"?"":it.olo_length);
-    const olo_w=m?m.w:(it.olo_width==="null"?"":it.olo_width);
-    const escape=v=>{const s=String(v??"");return s.includes(",")||s.includes('"')?`"${s.replace(/"/g,'""')}`:s;};
-    rows.push([
-      escape(it.sku),escape(it.name),escape(it.hyllypaikka),escape(it.hinnastotila||""),escape(it.visibility||""),
-      escape(it.height==="null"?"":it.height),escape(it.length==="null"?"":it.length),escape(it.width==="null"?"":it.width),
-      escape(olo_h),escape(olo_l),escape(olo_w),
-      escape(it.varasto||""),escape(it.tilaus)
-    ].join(","));
+  const rows=[["sku","olo_height","olo_length","olo_width"].join(",")];
+  Object.entries(measurements).forEach(([sku,m])=>{
+    rows.push([sku,m.h,m.l,m.w].join(","));
   });
-
+  if(rows.length===1){alert("Ei mitattuja tuotteita vietäväksi.");return;}
   const blob=new Blob(["\uFEFF"+rows.join("\n")],{type:"text/csv;charset=utf-8"});
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
