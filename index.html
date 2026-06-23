@@ -208,7 +208,11 @@ function resetSession(){
 
 function exportCsv(){
   const sep=";";
-  const toFi=v=>String(v).replace(".",",");
+  const toFi=v=>{
+    const n=parseFloat(String(v).replace(",","."));
+    if(isNaN(n))return"";
+    return String(n).replace(".",",");
+  };
   const rows=[["sku","olo_height","olo_length","olo_width"].join(sep)];
   Object.entries(measurements).forEach(([sku,m])=>{
     rows.push([sku,toFi(m.h),toFi(m.l),toFi(m.w)].join(sep));
