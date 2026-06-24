@@ -213,9 +213,10 @@ function exportCsv(){
     if(isNaN(n))return"";
     return String(n).replace(".",",");
   };
-  const rows=[["sku","olo_height","olo_length","olo_width"].join(sep)];
+  const header=["sku","olo_height-unit","olo_height-amount","olo_length-unit","olo_length-amount","olo_width-unit","olo_width-amount"].join(sep);
+  const rows=[header];
   Object.entries(measurements).forEach(([sku,m])=>{
-    rows.push([sku,toFi(m.h),toFi(m.l),toFi(m.w)].join(sep));
+    rows.push([sku,"CENTIMETER",toFi(m.h),"CENTIMETER",toFi(m.l),"CENTIMETER",toFi(m.w)].join(sep));
   });
   if(rows.length===1){alert("Ei mitattuja tuotteita vietäväksi.");return;}
   const blob=new Blob([rows.join("\n")],{type:"text/csv;charset=utf-8"});
