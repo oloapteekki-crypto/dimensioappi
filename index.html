@@ -132,9 +132,11 @@ function loadData(items){
 
 function reloadItems(){
   const n=parseInt(document.getElementById("count-sel").value)||20;
-  // sort: tilaus desc, then serpentine
-  const sorted=[...allItems].sort((a,b)=>b.tilaus-a.tilaus||cmpLoc(a.hyllypaikka,b.hyllypaikka));
-  activeItems=sorted.slice(0,n==="9999"||n>=allItems.length?allItems.length:n);
+  // 1. Ota top N myyntimäärän mukaan
+  const byTilaus=[...allItems].sort((a,b)=>b.tilaus-a.tilaus);
+  const topN=byTilaus.slice(0,n>=allItems.length?allItems.length:n);
+  // 2. Järjestä nämä N serpentiinijärjestykseen
+  activeItems=topN.sort((a,b)=>cmpLoc(a.hyllypaikka,b.hyllypaikka));
   doneSet.clear();skipSet.clear();
   renderCards();updateProgress();
 }
