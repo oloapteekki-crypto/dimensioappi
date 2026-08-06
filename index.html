@@ -120,9 +120,28 @@ function cmpLoc(a,b){
 }
 
 let allItems=[],activeItems=[],doneSet=new Set(),skipSet=new Set(),measurements={};
+const MEAS_KEY='dimensioappi_measurements';
+const SKIP_KEY='dimensioappi_skipped';
+
+function saveMeasCache(){
+  try{
+    localStorage.setItem(MEAS_KEY,JSON.stringify(measurements));
+    localStorage.setItem(SKIP_KEY,JSON.stringify([...skipSet]));
+  }catch(e){}
+}
+function loadMeasCache(){
+  try{
+    const m=localStorage.getItem(MEAS_KEY);if(m)measurements=JSON.parse(m);
+    const s=localStorage.getItem(SKIP_KEY);if(s)JSON.parse(s).forEach(k=>skipSet.add(k));
+    Object.keys(measurements).forEach(k=>doneSet.add(k));
+  }catch(e){}
+}
 
 function loadData(items){
-  allItems=items;doneSet.clear();skipSet.clear();measurements={};
+  allItems=items;
+  doneSet.clear();skipSet.clear();
+  // Restore previous measurements
+  loadMeasCache();
   const uploadView=document.getElementById("upload-view");
   if(uploadView)uploadView.style.display="none";
   document.getElementById("loading-view").style.display="none";
@@ -132,12 +151,9 @@ function loadData(items){
 
 function reloadItems(){
   const n=parseInt(document.getElementById("count-sel").value)||20;
-  // 1. Ota top N myyntimäärän mukaan
   const byTilaus=[...allItems].sort((a,b)=>b.tilaus-a.tilaus);
   const topN=byTilaus.slice(0,n>=allItems.length?allItems.length:n);
-  // 2. Järjestä nämä N serpentiinijärjestykseen
   activeItems=topN.sort((a,b)=>cmpLoc(a.hyllypaikka,b.hyllypaikka));
-  doneSet.clear();skipSet.clear();
   renderCards();updateProgress();
 }
 
@@ -187,11 +203,13 @@ function saveDims(sku){
   }
   measurements[sku]={h:parseFloat(h),l:parseFloat(l),w:parseFloat(w)};
   doneSet.add(sku);skipSet.delete(sku);
+  saveMeasCache();
   updateProgress();renderCards();
 }
 
 function markSkip(sku){
   skipSet.add(sku);doneSet.delete(sku);
+  saveMeasCache();
   updateProgress();renderCards();
 }
 
@@ -204,6 +222,7 @@ function updateProgress(){
 
 function resetSession(){
   doneSet.clear();skipSet.clear();measurements={};
+  saveMeasCache();
   document.getElementById("summary-view").style.display="none";
   renderCards();updateProgress();
 }
