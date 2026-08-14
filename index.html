@@ -175,6 +175,7 @@ function renderCards(){
   let html="";
   activeItems.forEach((item,i)=>{
     const isDone=doneSet.has(item.sku)||skipSet.has(item.sku);
+    const isSkipped=skipSet.has(item.sku);
     const m=measurements[item.sku]||{};
     const hasRef=item.height&&item.height!=="null"&&item.height!=="0"&&parseFloat(item.height)>0;
     html+=`<div class="card${isDone?" done":""}">
@@ -188,6 +189,8 @@ function renderCards(){
         <div class="loc-code">${item.hyllypaikka}</div>
       </div>
       ${hasRef?`<div class="ref-dims">Nykyinen: <strong>H ${item.height} × L ${item.length} × W ${item.width} cm</strong></div>`:`<div class="ref-dims" style="color:#c0392b">Ei aiempia dimensioita</div>`}
+      ${isSkipped?`<div class="btn-row"><button class="btn skip-btn" onclick="undoSkip('${item.sku}')">↩ Peru ohitus</button></div>`:""}
+      ${isDone&&!isSkipped?"":""}
       ${isDone?"":"<div class=\"dim-inputs\"><div class=\"dim-group\"><label>Korkeus (H)</label><input type=\"number\" inputmode=\"decimal\" step=\"0.1\" id=\"h_"+item.sku+"\" value=\""+(m.h||"")+"\" placeholder=\"0.0\"></div><div class=\"dim-group\"><label>Pituus (L)</label><input type=\"number\" inputmode=\"decimal\" step=\"0.1\" id=\"l_"+item.sku+"\" value=\""+(m.l||"")+"\" placeholder=\"0.0\"></div><div class=\"dim-group\"><label>Leveys (W)</label><input type=\"number\" inputmode=\"decimal\" step=\"0.1\" id=\"w_"+item.sku+"\" value=\""+(m.w||"")+"\" placeholder=\"0.0\"></div></div><div class=\"btn-row\"><button class=\"btn skip-btn\" onclick=\"markSkip('"+item.sku+"')\">✕ Ohita</button><button class=\"btn primary\" onclick=\"saveDims('"+item.sku+"')\">✓ Tallenna</button></div>"}
     </div>`;
   });
@@ -209,6 +212,11 @@ function saveDims(sku){
 
 function markSkip(sku){
   skipSet.add(sku);doneSet.delete(sku);
+  saveMeasCache();
+  updateProgress();renderCards();
+}
+function undoSkip(sku){
+  skipSet.delete(sku);
   saveMeasCache();
   updateProgress();renderCards();
 }
